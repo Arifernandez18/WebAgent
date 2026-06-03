@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEBAGENT — Get a Quote</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0f0f0f;--black-2:#181818;--black-3:#1f1f1f;
+    --gold:#c9a84c;--gold-light:#e8c97a;--gold-dark:#9b7a2a;
+    --white:#f7f2e8;--off-white:#ede8dc;--gray:#9a9a9a;--gray-light:#cccccc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+  body{background:var(--black-2);color:var(--white);font-family:'Montserrat',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+  .cursor{width:10px;height:10px;background:var(--gold);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:10002;transform:translate(-50%,-50%)}
+  .cursor-follower{width:36px;height:36px;border:1px solid var(--gold);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:10001;transform:translate(-50%,-50%);transition:width .2s,height .2s;opacity:.5}
+  .top-bar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:16px 60px;background:rgba(15,15,15,.97);backdrop-filter:blur(8px);border-bottom:1px solid rgba(201,168,76,.07)}
+  .logo{font-family:'Cormorant Garamond',serif;font-size:1.5rem;letter-spacing:.35em;color:var(--gold);font-weight:600;text-decoration:none}
+  .logo span{color:var(--white)}
+  .back-link{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gray);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s;cursor:none}
+  .back-link:hover{color:var(--gold)}.back-link::before{content:'←'}
+  .lang-switch{display:flex;align-items:center;gap:4px}
+  .lang-btn{background:none;border:none;cursor:none;padding:5px 10px;color:var(--gray);font-family:'Montserrat',sans-serif;font-size:.68rem;letter-spacing:.1em;transition:color .2s;border-radius:2px}
+  .lang-btn.active{color:var(--gold);border:1px solid var(--gold-dark)}
+
+  .page-hero{padding:160px 60px 80px;background:radial-gradient(ellipse 60% 80% at 10% 30%,rgba(201,168,76,.09) 0%,transparent 55%),radial-gradient(ellipse 40% 50% at 90% 70%,rgba(201,168,76,.05) 0%,transparent 50%),linear-gradient(160deg,#1a1710 0%,#0f0f0f 55%,#141414 100%);text-align:center;position:relative;overflow:hidden}
+  .page-hero::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:55px 55px;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black,transparent);pointer-events:none}
+  .eyebrow{font-size:.65rem;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:14px}
+  .eyebrow::before,.eyebrow::after{content:'';width:32px;height:1px;background:var(--gold-dark)}
+  .page-hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.8rem,7vw,6rem);font-weight:300;line-height:.95;color:var(--white);margin-bottom:12px}
+  .page-hero h1 em{color:var(--gold);font-style:italic}
+  .page-hero p{font-size:clamp(.85rem,1.5vw,1.05rem);color:var(--gray-light);line-height:1.85;max-width:680px;margin:20px auto 0}
+
+  .consult-banner{background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03));border-top:1px solid rgba(201,168,76,.2);border-bottom:1px solid rgba(201,168,76,.2);padding:40px 60px}
+  .consult-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+  .consult-icon{font-size:2.5rem}
+  .consult-inner h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--off-white);margin-bottom:8px}
+  .consult-inner p{font-size:.82rem;color:var(--gray-light);line-height:1.8}
+  .consult-steps{display:flex;gap:0;margin-top:20px;flex-wrap:wrap}
+  .cs{display:flex;align-items:center;gap:10px;font-size:.75rem;color:var(--gray-light)}
+  .cs::after{content:'→';color:var(--gold-dark);margin:0 14px;opacity:.6}.cs:last-child::after{display:none}
+  .cs-num{width:24px;height:24px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;color:var(--gold);flex-shrink:0}
+
+  .gold-divider{display:flex;align-items:center;justify-content:center;gap:16px;padding:4px 60px}
+  .gold-divider::before{background:linear-gradient(to right,transparent,rgba(201,168,76,.2))}
+  .gold-divider::after{background:linear-gradient(to left,transparent,rgba(201,168,76,.2))}
+  .gold-divider::before,.gold-divider::after{content:'';flex:1;height:1px}
+  .gold-divider span{color:var(--gold);font-size:.9rem;opacity:.6}
+
+  /* TIERS */
+  .tiers-section{padding:80px 60px;background:#111111}
+  .tiers-header{text-align:center;max-width:700px;margin:0 auto 60px}
+  .section-label{font-size:.63rem;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:14px}
+  .section-label::before,.section-label::after{content:'';width:24px;height:1px;background:var(--gold-dark)}
+  .section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:300;line-height:1.1;color:var(--white)}
+  .section-title em{color:var(--gold);font-style:italic}
+  .tiers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1100px;margin:0 auto}
+  .tier-card{background:#1a1a1a;border:1px solid rgba(201,168,76,.1);padding:0;overflow:hidden;position:relative;transition:border-color .3s,transform .3s;cursor:none}
+  .tier-card:hover{border-color:rgba(201,168,76,.3);transform:translateY(-4px)}
+  .tier-card.selected{border-color:var(--gold)}
+  .tier-card.featured{border-color:rgba(201,168,76,.35)}
+  .tier-card.featured::before{content:attr(data-badge);position:absolute;top:0;left:0;right:0;background:linear-gradient(to right,var(--gold-dark),var(--gold));color:var(--black);font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:8px;text-align:center}
+  .tier-top{padding:32px 28px 24px;border-bottom:1px solid rgba(201,168,76,.08)}
+  .tier-card.featured .tier-top{padding-top:44px}
+  .tier-name{font-size:.62rem;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:14px}
+  .tier-price{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--white);line-height:1}
+  .tier-price sup{font-size:1.3rem;vertical-align:super;color:var(--gold)}
+  .tier-price-note{font-size:.7rem;color:var(--gray);margin-top:6px}
+  .tier-desc{font-size:.78rem;color:var(--gray-light);line-height:1.75;margin-top:14px}
+  .tier-maintenance{margin-top:14px;padding:10px 14px;background:rgba(201,168,76,.06);border-left:2px solid var(--gold-dark);font-size:.73rem;color:var(--gray-light);line-height:1.6}
+  .tier-maintenance strong{color:var(--gold-light)}
+  .tier-body{padding:24px 28px}
+  .tier-features{list-style:none}
+  .tier-features li{font-size:.78rem;color:var(--gray-light);padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:10px;align-items:flex-start}
+  .tier-features li::before{content:'✦';font-size:.45rem;color:var(--gold);flex-shrink:0;margin-top:4px}
+  .tier-features li.dim{opacity:.35}.tier-features li.dim::before{color:var(--gray)}
+  .tier-select{display:block;width:calc(100% - 56px);margin:0 28px 28px;padding:13px;text-align:center;font-family:'Montserrat',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;cursor:none;transition:background .25s;border:1px solid rgba(201,168,76,.35);background:transparent;color:var(--gold)}
+  .tier-select:hover,.tier-select.active{background:var(--gold);color:var(--black);border-color:var(--gold)}
+  .compare-note{text-align:center;font-size:.75rem;color:var(--gray);margin-top:28px;max-width:760px;margin-left:auto;margin-right:auto;line-height:1.8}
+  .compare-note strong{color:var(--gold-light)}
+
+  /* ADD-ONS */
+  .addons-section{padding:60px 60px;background:#161614}
+  .addons-header{max-width:1000px;margin:0 auto 40px}
+  .addons-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:900px;margin:0 auto}
+  .addon-toggle{background:#1c1c1a;border:1px solid rgba(201,168,76,.1);padding:20px 18px;display:flex;align-items:flex-start;gap:14px;cursor:none;transition:border-color .25s,background .25s}
+  .addon-toggle:hover{border-color:rgba(201,168,76,.25)}
+  .addon-toggle.selected{border-color:var(--gold);background:rgba(201,168,76,.04)}
+  .addon-check{width:18px;height:18px;border:1px solid rgba(201,168,76,.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--gold);transition:background .2s;margin-top:2px}
+  .addon-toggle.selected .addon-check{background:var(--gold);color:var(--black)}
+  .addon-info{flex:1}
+  .addon-name{font-size:.78rem;font-weight:600;color:var(--off-white);margin-bottom:3px}
+  .addon-price{font-size:.68rem;color:var(--gold)}
+  .addon-desc-small{font-size:.72rem;color:var(--gray);line-height:1.5;margin-top:4px}
+
+  /* REFERRAL HIGHLIGHT */
+  .referral-note{max-width:900px;margin:28px auto 0;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);padding:24px 28px;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start}
+  .ref-icon{font-size:1.8rem}
+  .referral-note h4{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold-light);margin-bottom:8px}
+  .referral-note p{font-size:.78rem;color:var(--gray-light);line-height:1.75}
+  .ref-rewards{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .ref-reward-item{font-size:.75rem;color:var(--off-white);display:flex;gap:8px;align-items:flex-start}
+  .ref-reward-item::before{content:'✦';color:var(--gold);font-size:.45rem;margin-top:4px;flex-shrink:0}
+
+  /* FAQ */
+  .faq-section{padding:80px 60px;background:#111111}
+  .faq-inner{max-width:860px;margin:0 auto}
+  .faq-header{text-align:center;margin-bottom:50px}
+  .faq-list{display:flex;flex-direction:column;gap:0}
+  .faq-item{border-bottom:1px solid rgba(201,168,76,.1)}
+  .faq-item:first-child{border-top:1px solid rgba(201,168,76,.1)}
+  .faq-q{padding:22px 0;display:flex;justify-content:space-between;align-items:center;cursor:none;gap:20px}
+  .faq-q:hover .faq-qtext{color:var(--gold-light)}
+  .faq-qtext{font-size:.88rem;font-weight:500;color:var(--off-white);transition:color .2s;line-height:1.5}
+  .faq-icon{color:var(--gold);font-size:1rem;flex-shrink:0;transition:transform .3s;line-height:1}
+  .faq-item.open .faq-icon{transform:rotate(45deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .5s ease,padding .3s}
+  .faq-item.open .faq-a{max-height:1000px;padding-bottom:22px}
+  .faq-a-inner{font-size:.82rem;color:var(--gray-light);line-height:1.85}
+  .faq-a-inner p{margin-bottom:10px}
+  .faq-a-inner ul{padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .faq-a-inner ul li{font-size:.8rem;color:var(--gray-light);display:flex;gap:10px;align-items:flex-start;line-height:1.6}
+  .faq-a-inner ul li::before{content:'→';color:var(--gold-dark);flex-shrink:0;margin-top:2px}
+  .faq-a-inner strong{color:var(--off-white);font-weight:600}
+
+  /* CONTACT / FORM */
+  .form-section{padding:60px 60px 80px;background:#161614}
+  .form-inner{max-width:700px;margin:0 auto}
+  .form-header{margin-bottom:40px;text-align:center}
+  .contact-methods{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px;max-width:700px;margin-left:auto;margin-right:auto}
+  .contact-method{background:#1c1c1a;border:1px solid rgba(201,168,76,.12);padding:20px;display:flex;align-items:center;gap:14px;transition:border-color .25s,background .25s}
+  .contact-method:hover{border-color:rgba(201,168,76,.3);background:#1e1e1c}
+  .cm-icon{font-size:1.6rem;flex-shrink:0}
+  .cm-info h4{font-size:.78rem;font-weight:600;color:var(--off-white);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+  .cm-info p{font-size:.72rem;color:var(--gray)}
+  .cm-btn{margin-top:8px;display:inline-block;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-decoration:none;cursor:none;transition:color .2s}
+  .cm-btn:hover{color:var(--gold-light)}
+
+  .form-divider{display:flex;align-items:center;gap:16px;margin:32px 0;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gray)}
+  .form-divider::before,.form-divider::after{content:'';flex:1;height:1px;background:rgba(201,168,76,.12)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+  .form-group{display:flex;flex-direction:column;gap:7px}
+  .form-group.full{grid-column:1/-1}
+  .form-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:500}
+  .form-input,.form-select,.form-textarea{background:#1c1c1a;border:1px solid rgba(201,168,76,.18);color:var(--white);padding:13px 16px;font-family:'Montserrat',sans-serif;font-size:.82rem;outline:none;transition:border-color .25s;appearance:none;-webkit-appearance:none}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--gold)}
+  .form-select option{background:#1c1c1a}
+  .form-textarea{min-height:110px;resize:vertical}
+  .form-referral{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#1c1c1a;border:1px solid rgba(201,168,76,.12);margin-bottom:18px}
+  .form-referral input[type="checkbox"]{accent-color:var(--gold);width:15px;height:15px;cursor:none;flex-shrink:0}
+  .form-referral label{font-size:.78rem;color:var(--gray-light);cursor:none}
+
+  .summary-box{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.2);padding:24px;margin-bottom:24px}
+  .summary-title{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  .summary-line{display:flex;justify-content:space-between;font-size:.8rem;color:var(--gray-light);padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .summary-line:last-child{border-bottom:none;color:var(--off-white);font-weight:500;padding-top:12px}
+  .summary-line span:last-child{color:var(--gold)}
+  #summary-empty{font-size:.78rem;color:var(--gray);font-style:italic;text-align:center;padding:10px 0}
+
+  .submit-area{text-align:center}
+  .btn-wa{display:inline-flex;align-items:center;gap:12px;padding:18px 44px;background:var(--gold);color:var(--black);font-family:'Montserrat',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;cursor:none;border:none;transition:background .25s,transform .2s}
+  .btn-wa:hover{background:var(--gold-light);transform:translateY(-2px)}
+  .btn-wa .wa-icon{font-size:1.2rem}
+  .submit-note{font-size:.7rem;color:var(--gray);margin-top:12px}
+
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+  .animate{animation:fadeInUp .8s ease both}
+  .delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+  .wa-float{position:fixed;bottom:28px;right:28px;width:52px;height:52px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.3rem;text-decoration:none;z-index:999;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:transform .25s;cursor:none;padding:0}
+  .wa-float:hover{transform:scale(1.1)}
+  .modal-opt{display:flex;align-items:center;gap:14px;padding:16px 20px;background:#1c1c1a;border:1px solid rgba(201,168,76,.2);color:var(--off-white);font-family:'Montserrat',sans-serif;font-size:.8rem;cursor:none;transition:border-color .2s,background .2s;text-align:left;width:100%}
+  .modal-opt:hover{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.04)}
+  .select-plan-notice{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.4);padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px;border-radius:0}
+
+  @media(max-width:900px){
+    .top-bar,.page-hero,.consult-banner,.tiers-section,.addons-section,.faq-section,.form-section{padding-left:22px;padding-right:22px}
+    .tiers-grid{grid-template-columns:1fr}
+    .addons-grid,.contact-methods,.form-grid{grid-template-columns:1fr}
+    .consult-inner{grid-template-columns:1fr}.consult-icon{display:none}
+    .referral-note{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="follower"></div>
+
+<nav class="top-bar">
+  <a href="index.html" class="logo">WEB<span>AGENT</span></a>
+  <a href="index.html" class="back-link" data-key="back">Back to Home</a>
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <span style="color:var(--gold-dark)">|</span>
+    <button class="lang-btn" onclick="setLang('es')">ES</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <div class="eyebrow animate" data-key="hero-eye">Start Your Project</div>
+  <h1 class="animate delay-1">Let's build your <em>dream</em> site</h1>
+  <p class="animate delay-2" data-key="hero-p">Tell us what you need. We'll take care of the rest — with care, creativity, and a personal touch that makes your site uniquely yours.</p>
+</div>
+
+<!-- CONSULTATION BANNER -->
+<div class="consult-banner">
+  <div class="consult-inner">
+    <div class="consult-icon">🤝</div>
+    <div>
+      <h3 data-key="cb-title">Every project starts with a free consultation</h3>
+      <p data-key="cb-desc">Before any code is written, we sit down with you — by WhatsApp, SMS, or a call — to understand your goals, define your style, choose colors, plan content, and build a shared vision. No surprises. Just a site that feels like <em>you</em>.</p>
+      <div class="consult-steps">
+        <div class="cs"><div class="cs-num">1</div><span data-key="cs1">Discovery Call</span></div>
+        <div class="cs"><div class="cs-num">2</div><span data-key="cs2">Design Proposal</span></div>
+        <div class="cs"><div class="cs-num">3</div><span data-key="cs3">You Review & Approve</span></div>
+        <div class="cs"><div class="cs-num">4</div><span data-key="cs4">We Build & Launch</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"><span>✦</span></div>
+
+<!-- TIERS -->
+<section class="tiers-section">
+  <div class="tiers-header">
+    <div class="section-label" data-key="tiers-label">Choose Your Package</div>
+    <h2 class="section-title" data-key="tiers-title">What best describes <em>your need?</em></h2>
+  </div>
+  <div class="tiers-grid">
+
+    <!-- PORTFOLIO -->
+    <div class="tier-card animate delay-1" id="tier-portfolio" onclick="selectTier('portfolio')">
+      <div class="tier-top">
+        <div class="tier-name" data-key="t1-name">Personal Portfolio</div>
+        <div class="tier-price"><sup>$</sup>160<span style="font-size:1rem;color:var(--gray);font-family:'Montserrat',sans-serif;font-weight:300;"> +</span></div>
+        <div class="tier-price-note" data-key="t1-note">Starting price · final quote after consultation</div>
+        <p class="tier-desc" data-key="t1-desc">Perfect for artists, photographers, students, and freelancers who want to showcase their work and personal brand online.</p>
+        <div class="tier-maintenance" data-key="t1-maint">
+          <strong>Updates & changes: $30</strong> — Need to update a photo, text, or add a section? Each maintenance visit or modification is a flat $30.
+        </div>
+      </div>
+      <div class="tier-body">
+        <ul class="tier-features">
+          <li data-key="t1-f1">Up to 5 custom pages</li>
+          <li data-key="t1-f2">Personal bio & about section</li>
+          <li data-key="t1-f3">Portfolio / gallery showcase</li>
+          <li data-key="t1-f4">Contact form + social links</li>
+          <li data-key="t1-f5">Mobile-first responsive design</li>
+          <li data-key="t1-f6">Basic SEO setup</li>
+          <li class="dim" data-key="t1-f7">Payment integration</li>
+          <li class="dim" data-key="t1-f8">Booking system</li>
+        </ul>
+      </div>
+      <button class="tier-select" id="btn-portfolio" onclick="selectTier('portfolio')" data-key="t-sel">Select This Plan</button>
+    </div>
+
+    <!-- BUSINESS -->
+    <div class="tier-card featured animate delay-2" data-badge="MOST POPULAR" id="tier-business" onclick="selectTier('business')">
+      <div class="tier-top">
+        <div class="tier-name" data-key="t2-name">Personal Business</div>
+        <div class="tier-price"><sup>$</sup>220<span style="font-size:1rem;color:var(--gray);font-family:'Montserrat',sans-serif;font-weight:300;"> +</span></div>
+        <div class="tier-price-note" data-key="t2-note">Starting price · vs. $500+ others charge in the US</div>
+        <p class="tier-desc" data-key="t2-desc">For entrepreneurs, service providers, and marketplace owners ready to grow online and start converting visitors into clients.</p>
+        <div class="tier-maintenance" data-key="t2-maint">
+          <strong>Monthly maintenance: $20/mo</strong> — Includes updates, security checks, and minor content changes. Discounts may be applied based on your plan.
+        </div>
+      </div>
+      <div class="tier-body">
+        <ul class="tier-features">
+          <li data-key="t2-f1">Up to 10 custom pages</li>
+          <li data-key="t2-f2">Custom design & branding</li>
+          <li data-key="t2-f3">Service / product listings</li>
+          <li data-key="t2-f4">Payment processing integration</li>
+          <li data-key="t2-f5">WhatsApp button & social links</li>
+          <li data-key="t2-f6">Booking / contact system</li>
+          <li data-key="t2-f7">Advanced SEO setup</li>
+          <li data-key="t2-f8">Mobile-first responsive design</li>
+        </ul>
+      </div>
+      <button class="tier-select" id="btn-business" onclick="selectTier('business')" data-key="t-sel2">Select This Plan</button>
+    </div>
+
+    <!-- COMPANY -->
+    <div class="tier-card animate delay-3" id="tier-company" onclick="selectTier('company')">
+      <div class="tier-top">
+        <div class="tier-name" data-key="t3-name">Company / Organization</div>
+        <div class="tier-price"><sup>$</sup>800<span style="font-size:1rem;color:var(--gray);font-family:'Montserrat',sans-serif;font-weight:300;"> +</span></div>
+        <div class="tier-price-note" data-key="t3-note">Starting price · custom quote based on scope</div>
+        <p class="tier-desc" data-key="t3-desc">For established companies, clinics, and organizations that need a full-featured, professional digital presence with advanced functionality.</p>
+        <div class="tier-maintenance" data-key="t3-maint">
+          <strong>Monthly maintenance: $20/mo</strong> — Full site upkeep, priority support, and content updates. Discounts may be applied.
+        </div>
+      </div>
+      <div class="tier-body">
+        <ul class="tier-features">
+          <li data-key="t3-f1">Unlimited pages & sections</li>
+          <li data-key="t3-f2">Full custom backend / CMS</li>
+          <li data-key="t3-f3">eCommerce or marketplace</li>
+          <li data-key="t3-f4">Team / staff profiles</li>
+          <li data-key="t3-f5">CRM & automation integration</li>
+          <li data-key="t3-f6">Multi-language support</li>
+          <li data-key="t3-f7">Advanced analytics & reporting</li>
+          <li data-key="t3-f8">Priority support & maintenance</li>
+        </ul>
+      </div>
+      <button class="tier-select" id="btn-company" onclick="selectTier('company')" data-key="t-sel3">Select This Plan</button>
+    </div>
+
+  </div>
+  <p class="compare-note" data-key="compare-note">💡 <strong>Why WEBAGENT?</strong> Other agencies in the US charge $500–$2,000+ for the same quality. We believe great websites should be accessible to everyone — without cutting corners on care, design, or support.</p>
+</section>
+
+<div class="gold-divider"><span>◆</span></div>
+
+<!-- ADD-ONS -->
+<section class="addons-section">
+  <div class="addons-header">
+    <div class="section-label" data-key="ao-label">Optional Add-Ons</div>
+    <h2 class="section-title" data-key="ao-title">Customize your <em>package</em></h2>
+    <p style="font-size:.82rem;color:var(--gray-light);line-height:1.8;margin-top:12px;" data-key="ao-sub">Click to select any extras. Everything gets confirmed on your free consultation call.</p>
+  </div>
+  <div class="addons-grid" id="addons-grid">
+    <div class="addon-toggle" onclick="toggleAddon(this,'logo','Branding & Logo','$50')" id="addon-logo">
+      <div class="addon-check" id="chk-logo"></div>
+      <div class="addon-info"><div class="addon-name" data-key="ao1-n">🎨 Branding & Logo Design</div><div class="addon-price">+$50</div><div class="addon-desc-small" data-key="ao1-d">Professional logo + color palette + brand style guide. Makes your business instantly recognizable across all platforms.</div></div>
+    </div>
+    <div class="addon-toggle" onclick="toggleAddon(this,'chatbot','WhatsApp Chatbot','$25')" id="addon-chatbot">
+      <div class="addon-check" id="chk-chatbot"></div>
+      <div class="addon-info"><div class="addon-name" data-key="ao2-n">🤖 WhatsApp Chatbot</div><div class="addon-price">+$25</div><div class="addon-desc-small" data-key="ao2-d">Automated bot that answers your most common questions, captures leads, and can even book appointments — without you doing anything.</div></div>
+    </div>
+    <div class="addon-toggle" onclick="toggleAddon(this,'email','Automated Email Response','$20')" id="addon-email">
+      <div class="addon-check" id="chk-email"></div>
+      <div class="addon-info"><div class="addon-name" data-key="ao3-n">📧 Automated Email Response</div><div class="addon-price">+$20</div><div class="addon-desc-small" data-key="ao3-d">Instant welcome emails and follow-up messages sent automatically when someone contacts you or fills out a form on your site.</div></div>
+    </div>
+    <div class="addon-toggle" onclick="toggleAddon(this,'maintenance','Monthly Maintenance','$20/mo')" id="addon-maintenance">
+      <div class="addon-check" id="chk-maintenance"></div>
+      <div class="addon-info"><div class="addon-name" data-key="ao4-n">🔒 Monthly Maintenance Plan</div><div class="addon-price">+$20/mo</div><div class="addon-desc-small" data-key="ao4-d">Regular updates, security checks, and content changes so your site stays fresh, fast, and secure. Discounts may be applied.</div></div>
+    </div>
+  </div>
+
+  <!-- REFERRAL REWARDS -->
+  <div class="referral-note">
+    <div class="ref-icon">🎁</div>
+    <div>
+      <h4 data-key="ref-title">Referral Program — Rewards</h4>
+      <p data-key="ref-p">Refer a friend to WEBAGENT and both of you benefit. Here's exactly what you get:</p>
+      <div class="ref-rewards">
+        <div class="ref-reward-item" data-key="ref-r1"><strong>Portfolio page referral:</strong>&nbsp;You get 1 free maintenance visit ($30 value) when your referred friend signs a contract.</div>
+        <div class="ref-reward-item" data-key="ref-r2"><strong>Personal Business / Marketplace referral:</strong>&nbsp;You get 2 months of free monthly maintenance ($40 value) once your friend's project is live.</div>
+        <div class="ref-reward-item" data-key="ref-r3">Discounts stack. Refer more friends, earn more free months. No expiration on your reward.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"><span>✦</span></div>
+
+<!-- FORM + CONTACT -->
+<section class="form-section">
+  <div class="form-inner">
+    <div class="form-header">
+      <div class="section-label" data-key="form-label">Get in Touch</div>
+      <h2 class="section-title" data-key="form-title">Ready? <em>Let's talk.</em></h2>
+      <p style="font-size:.8rem;color:var(--gray-light);margin-top:12px;line-height:1.8;" data-key="form-sub">Choose how you'd like to reach us — or fill out the form below and we'll send it all to WhatsApp for you.</p>
+    </div>
+
+    <!-- CONTACT METHODS -->
+    <div class="contact-methods">
+      <div class="contact-method">
+        <div class="cm-icon">💬</div>
+        <div class="cm-info">
+          <h4 data-key="cm1-t">WhatsApp</h4>
+          <p data-key="cm1-p">Fastest response. Chat with us directly — messages, voice notes, photos, whatever works for you.</p>
+          <a href="#" onclick="openWhatsAppDirect();return false;" class="cm-btn" data-key="cm1-btn">Message on WhatsApp →</a>
+        </div>
+      </div>
+      <div class="contact-method">
+        <div class="cm-icon">📱</div>
+        <div class="cm-info">
+          <h4 data-key="cm2-t">SMS / Text Message</h4>
+          <p data-key="cm2-p">Prefer a regular text? Send us an SMS anytime and we'll get back to you promptly.</p>
+          <a href="#" onclick="openSMSDirect();return false;" class="cm-btn" data-key="cm2-btn">Send a Text →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-divider" data-key="form-or">or fill out the form below</div>
+
+    <!-- SELECT PLAN NOTICE -->
+    <div class="select-plan-notice">
+      <span style="font-size:1.4rem;flex-shrink:0">☝️</span>
+      <p style="font-size:.78rem;color:var(--gold-light);line-height:1.6" data-key="notice-plan"><strong>Before submitting</strong> — scroll up and select a package and any add-ons you're interested in. It helps us give you the most accurate quote!</p>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-box" id="summary-box">
+      <div class="summary-title" data-key="sum-title">Your Selection Summary</div>
+      <div id="summary-empty" data-key="sum-empty">No plan selected yet — choose a package above.</div>
+      <div id="summary-lines"></div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label" data-key="fl-name">Full Name</label><input type="text" class="form-input" id="inp-name" placeholder="Your full name"></div>
+      <div class="form-group"><label class="form-label" data-key="fl-wa">WhatsApp / Phone</label><input type="tel" class="form-input" id="inp-phone" placeholder="+1 (555) 000-0000"></div>
+      <div class="form-group"><label class="form-label" data-key="fl-email">Email</label><input type="email" class="form-input" id="inp-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label class="form-label" data-key="fl-biz">Business / Project Name</label><input type="text" class="form-input" id="inp-biz" placeholder="Your business name"></div>
+      <div class="form-group full">
+        <label class="form-label" data-key="fl-industry">Industry / Type</label>
+        <select class="form-select" id="inp-industry">
+          <option value="" data-key="ind-0">Select your industry...</option>
+          <option data-key="ind-1">Marketplace / eCommerce</option>
+          <option data-key="ind-2">Medical / Health</option>
+          <option data-key="ind-3">Consulting / Advisory</option>
+          <option data-key="ind-4">Cleaning / Home Services</option>
+          <option data-key="ind-5">Restaurant / Food</option>
+          <option data-key="ind-6">Art / Photography / Portfolio</option>
+          <option data-key="ind-7">Other</option>
+        </select>
+      </div>
+      <div class="form-group full"><label class="form-label" data-key="fl-msg">Tell us about your project</label><textarea class="form-textarea" id="inp-msg" placeholder="What does your business do? What features matter most? Any references?"></textarea></div>
+    </div>
+
+    <div class="form-referral">
+      <input type="checkbox" id="ref-check">
+      <label for="ref-check" data-key="fl-ref">I was referred by someone (write their name in the message above)</label>
+    </div>
+
+    <div class="submit-area">
+      <button class="btn-wa" onclick="sendToWhatsApp()">
+        <span class="wa-icon">💬</span>
+        <span data-key="btn-send">Send via WhatsApp</span>
+      </button>
+      <p class="submit-note" data-key="btn-note">Opens WhatsApp with all your details pre-filled. We reply within a few hours.</p>
+    </div>
+  </div>
+</section>
+
+<button onclick="openContactModal()" class="wa-float">💬</button>
+
+<div class="gold-divider"><span>◆</span></div>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="faq-inner">
+    <div class="faq-header">
+      <div class="section-label" data-key="faq-label">FAQ</div>
+      <h2 class="section-title" data-key="faq-title">Questions & <em>Answers</em></h2>
+    </div>
+    <div class="faq-list" id="faq-list">
+      <!-- FAQs injected by JS for bilingual support -->
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT MODAL -->
+<div id="contact-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.78);align-items:center;justify-content:center;backdrop-filter:blur(5px)" onclick="if(event.target===this)closeContactModal()">
+  <div style="background:#1a1a1a;border:1px solid rgba(201,168,76,.35);padding:40px 36px;max-width:360px;width:90%;position:relative">
+    <button onclick="closeContactModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:var(--gray);font-size:1.5rem;cursor:pointer;line-height:1">×</button>
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--off-white);margin-bottom:8px" data-key="modal-title">How would you like to reach us?</div>
+      <div style="font-size:.7rem;color:var(--gray);letter-spacing:.1em;text-transform:uppercase" data-key="modal-sub">Choose your preferred method</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button onclick="openWhatsAppDirect();closeContactModal();" class="modal-opt">
+        <span style="font-size:1.4rem">💬</span><span data-key="modal-wa">WhatsApp</span>
+      </button>
+      <button onclick="openSMSDirect();closeContactModal();" class="modal-opt">
+        <span style="font-size:1.4rem">📱</span><span data-key="modal-sms">SMS / Text Message</span>
+      </button>
+      <button onclick="callDirect();closeContactModal();" class="modal-opt">
+        <span style="font-size:1.4rem">📞</span><span data-key="modal-call">Call Us</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// CURSOR
+const cursor=document.getElementById('cursor'),follower=document.getElementById('follower');
+let mx=0,my=0,fx=0,fy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function loop(){fx+=(mx-fx)*.12;fy+=(my-fy)*.12;follower.style.left=fx+'px';follower.style.top=fy+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll('a,button,.tier-card,.addon-toggle,.faq-q,.contact-method').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{follower.style.width='52px';follower.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{follower.style.width='36px';follower.style.height='36px';});
+});
+
+// TIER
+let selectedTier=null;
+const tierLabels={
+  en:{portfolio:'Personal Portfolio — from $160',business:'Personal Business — from $220',company:'Company / Organization — from $800'},
+  es:{portfolio:'Portfolio Personal — desde $160',business:'Negocio Personal — desde $220',company:'Empresa / Organización — desde $800'}
+};
+function selectTier(id){
+  ['portfolio','business','company'].forEach(t=>{
+    document.getElementById('tier-'+t).classList.toggle('selected',t===id);
+    document.getElementById('btn-'+t).classList.toggle('active',t===id);
+  });
+  selectedTier=id;updateSummary();
+}
+
+// ADDONS
+const selectedAddons={};
+function toggleAddon(el,id,name,price){
+  el.classList.toggle('selected');
+  const chk=document.getElementById('chk-'+id);
+  if(el.classList.contains('selected')){chk.textContent='✓';selectedAddons[id]={name,price};}
+  else{chk.textContent='';delete selectedAddons[id];}
+  updateSummary();
+}
+
+// SUMMARY
+function updateSummary(){
+  const empty=document.getElementById('summary-empty'),lines=document.getElementById('summary-lines');
+  const l=currentLang;
+  if(!selectedTier&&Object.keys(selectedAddons).length===0){empty.style.display='block';lines.innerHTML='';return;}
+  empty.style.display='none';
+  let html='';
+  if(selectedTier)html+=`<div class="summary-line"><span>${tierLabels[l][selectedTier]}</span><span>✦</span></div>`;
+  Object.values(selectedAddons).forEach(a=>{html+=`<div class="summary-line"><span>${a.name}</span><span>${a.price}</span></div>`;});
+  html+=`<div class="summary-line"><span>${l==='es'?'Cotización final en consulta':'Final quote confirmed on consultation'}</span><span>→ Free</span></div>`;
+  lines.innerHTML=html;
+}
+
+// CONTACT
+const WA='584141318142';
+const SMS_NUM='+17864489798';
+const CALL_NUM='+17864489798';
+const QUOTE_TPL={
+  en:`Hi WEBAGENT! 👋 I'd like to request a quote.\n\nName: \nType of business (portfolio/marketplace/company): \nSpecify type of use (ex: restaurant/medical/product/etc): \nProject name: \nAny more info or specifics you'd like to share? \nAny other request (ex: chatbot, can be found on the page): `,
+  es:`¡Hola WEBAGENT! 👋 Quisiera solicitar una cotización.\n\nNombre: \nTipo de negocio (portfolio/marketplace/empresa): \nEspecifica el tipo de uso (ej: restaurante/médico/producto/etc): \nNombre del proyecto: \n¿Alguna información adicional o especificaciones? \n¿Alguna otra solicitud (ej: chatbot, se puede encontrar en la página)?: `
+};
+function getQuoteMsg(){return QUOTE_TPL[currentLang]||QUOTE_TPL.en;}
+function openWhatsAppDirect(){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(getQuoteMsg()),'_blank');}
+function openSMSDirect(){window.location.href='sms:'+SMS_NUM+'?body='+encodeURIComponent(getQuoteMsg());}
+function callDirect(){window.location.href='tel:'+CALL_NUM;}
+function openContactModal(){document.getElementById('contact-modal').style.display='flex';}
+function closeContactModal(){document.getElementById('contact-modal').style.display='none';}
+function sendToWhatsApp(){
+  const name=document.getElementById('inp-name').value.trim();
+  const phone=document.getElementById('inp-phone').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  const biz=document.getElementById('inp-biz').value.trim();
+  const industry=document.getElementById('inp-industry').value;
+  const msg=document.getElementById('inp-msg').value.trim();
+  const ref=document.getElementById('ref-check').checked;
+  const l=currentLang;
+  const tier=selectedTier?tierLabels[l][selectedTier]:(l==='es'?'No seleccionado':'Not selected');
+  const addons=Object.keys(selectedAddons).length>0?Object.values(selectedAddons).map(a=>`${a.name} (${a.price})`).join(', '):(l==='es'?'Ninguno':'None');
+  const text=l==='es'
+    ?`¡Hola WEBAGENT! 👋 Quiero una cotización.\n\n*Nombre:* ${name||'—'}\n*Teléfono:* ${phone||'—'}\n*Email:* ${email||'—'}\n*Negocio:* ${biz||'—'}\n*Industria:* ${industry||'—'}\n*Paquete:* ${tier}\n*Extras:* ${addons}\n${ref?'*Referido:* Sí — ver mensaje\n':''}\n*Mi proyecto:*\n${msg||'—'}`
+    :`Hi WEBAGENT! 👋 I'd like a quote.\n\n*Name:* ${name||'—'}\n*Phone:* ${phone||'—'}\n*Email:* ${email||'—'}\n*Business:* ${biz||'—'}\n*Industry:* ${industry||'—'}\n*Package:* ${tier}\n*Add-Ons:* ${addons}\n${ref?'*Referred by:* Yes — see message\n':''}\n*About my project:*\n${msg||'—'}`;
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(text)}`,'_blank');
+}
+
+// FAQ DATA
+const FAQS={
+  en:[
+    {q:"What's the difference between a Portfolio, a Business page, and a Company site?",
+     a:`<p>Great question — here's a simple breakdown:</p><ul>
+       <li><strong>Portfolio ($160+)</strong> — Best for individuals: artists, photographers, designers, students. Showcases your work and lets people contact you. Simple, personal, elegant.</li>
+       <li><strong>Personal Business ($220+)</strong> — Best for entrepreneurs, freelancers, marketplaces, and service businesses (cleaning, consulting, food, medical). Includes payments, booking, and more tools to grow your client base.</li>
+       <li><strong>Company / Organization ($800+)</strong> — Best for established businesses with teams, complex services, or large product catalogs. Full backend, CRM, marketplace features, multi-language, advanced automation.</li>
+     </ul>`},
+    {q:"Do I need to know anything about websites to work with you?",
+     a:"<p>Absolutely not. You just need to know your business. We handle everything else — design, development, setup, and launch. You'll be involved in the creative direction (colors, text, style), but you don't need any technical knowledge.</p>"},
+    {q:"How long does it take to build my site?",
+     a:"<p>Timeline depends on the complexity of your project. Generally: Portfolio pages take <strong>3–7 days</strong>, Personal Business sites take <strong>1–2 weeks</strong>, and Company/Organization sites take <strong>2–4 weeks</strong>. After the consultation, we'll give you a specific timeline.</p>"},
+    {q:"What does maintenance mean, and do I need it?",
+     a:`<p>Maintenance covers updating your site after it's live — changing photos, editing text, adding new services, fixing anything that breaks, and keeping your site secure.</p><ul>
+       <li><strong>Portfolio pages:</strong> Each update or change is a flat $30. No monthly commitment needed unless you update frequently.</li>
+       <li><strong>Personal Business / Marketplace:</strong> $20/month covers regular updates and priority support. Discounts may be applied based on your plan.</li>
+     </ul><p>It's optional, but we recommend it so your site stays current.</p>`},
+    {q:"What's the Referral Program exactly?",
+     a:`<p>If you refer a friend or colleague who signs up with WEBAGENT:</p><ul>
+       <li>If they get a <strong>Portfolio page</strong>: you receive <strong>1 free maintenance visit</strong> ($30 value).</li>
+       <li>If they get a <strong>Personal Business or Marketplace site</strong>: you receive <strong>2 months of free monthly maintenance</strong> ($40 value).</li>
+     </ul><p>Rewards don't expire. Refer multiple friends — rewards stack.</p>`},
+    {q:"Can you add a WhatsApp chat button to my site?",
+     a:"<p>Yes — every site we build includes a WhatsApp direct button as standard. Visitors click it and go straight to a conversation with you on WhatsApp. We can also add an automated chatbot (+$25) that answers common questions, qualifies leads, and handles basic bookings automatically.</p>"},
+    {q:"Can my site accept payments?",
+     a:"<p>Yes. We integrate Stripe, PayPal, Venmo, Zelle, and other payment methods depending on your needs. Clients can pay you directly on your website. This is included in the Personal Business and Company plans, and can be added to a Portfolio site as an upgrade.</p>"},
+    {q:"Will my site work on mobile?",
+     a:"<p>Every site we build is mobile-first — meaning it's designed for phones first, then desktops. Since most people browse on their phones, this is non-negotiable for us. Your site will look and work beautifully on any device.</p>"},
+    {q:"Can the site be in Spanish and English?",
+     a:"<p>Yes. Bilingual (EN/ES) support is something we offer on all plans. Just let us know during the consultation and we'll set up your site with a language toggle so visitors can switch between both.</p>"},
+    {q:"What if I want changes after the site is launched?",
+     a:"<p>That's totally normal! For Portfolio clients, each change request is $30. For Business/Company clients on a maintenance plan, changes are covered. If you need a bigger redesign or a new section, we'll give you a separate quote — but small updates are always quick and affordable.</p>"},
+  ],
+  es:[
+    {q:"¿Cuál es la diferencia entre un Portfolio, una página de negocio y una página de empresa?",
+     a:`<p>Aquí te lo explico de forma simple:</p><ul>
+       <li><strong>Portfolio ($160+)</strong> — Ideal para personas: artistas, fotógrafos, diseñadores, estudiantes. Muestra tu trabajo y permite que te contacten. Simple, personal y elegante.</li>
+       <li><strong>Negocio Personal ($220+)</strong> — Ideal para emprendedores, freelancers, marketplaces y negocios de servicios (limpieza, consultoría, comida, médicos). Incluye pagos, reservas y herramientas para crecer.</li>
+       <li><strong>Empresa / Organización ($800+)</strong> — Ideal para empresas establecidas con equipos, servicios complejos o catálogos grandes. Backend completo, CRM, marketplace, multilingüe y automatización avanzada.</li>
+     </ul>`},
+    {q:"¿Necesito saber algo sobre páginas web para trabajar con ustedes?",
+     a:"<p>Para nada. Solo necesitas conocer tu negocio. Nosotros nos encargamos de todo — diseño, desarrollo, configuración y lanzamiento. Participarás en la dirección creativa (colores, textos, estilo), pero no necesitas conocimientos técnicos.</p>"},
+    {q:"¿Cuánto tiempo tarda construir mi página?",
+     a:"<p>Depende de la complejidad. En general: páginas Portfolio tardan <strong>3–7 días</strong>, páginas de Negocio Personal <strong>1–2 semanas</strong>, y páginas de Empresa <strong>2–4 semanas</strong>. Después de la consulta te daremos un tiempo específico.</p>"},
+    {q:"¿Qué es el mantenimiento y lo necesito?",
+     a:`<p>El mantenimiento cubre actualizar tu página después del lanzamiento — cambiar fotos, editar textos, agregar servicios, arreglar errores y mantener tu sitio seguro.</p><ul>
+       <li><strong>Portfolio:</strong> Cada cambio o actualización tiene un costo fijo de $30. Sin compromiso mensual a menos que actualices frecuentemente.</li>
+       <li><strong>Negocio Personal / Marketplace:</strong> $20/mes cubre actualizaciones regulares y soporte prioritario. Se pueden aplicar descuentos.</li>
+     </ul><p>Es opcional, pero lo recomendamos para que tu sitio siempre esté al día.</p>`},
+    {q:"¿En qué consiste exactamente el Programa de Referidos?",
+     a:`<p>Si refieres a un amigo o colega que contrata a WEBAGENT:</p><ul>
+       <li>Si contratan una <strong>página Portfolio</strong>: recibes <strong>1 visita de mantenimiento gratis</strong> (valor $30).</li>
+       <li>Si contratan una <strong>página de Negocio Personal o Marketplace</strong>: recibes <strong>2 meses de mantenimiento mensual gratis</strong> (valor $40).</li>
+     </ul><p>Las recompensas no vencen. Refiere varios amigos — se acumulan.</p>`},
+    {q:"¿Pueden agregarle un botón de WhatsApp a mi página?",
+     a:"<p>Sí — todas las páginas que construimos incluyen un botón directo de WhatsApp de forma estándar. Los visitantes hacen clic y van directo a una conversación contigo. También podemos agregar un chatbot automatizado (+$25) que responde preguntas comunes, califica leads y gestiona citas automáticamente.</p>"},
+    {q:"¿Mi página puede recibir pagos?",
+     a:"<p>Sí. Integramos Stripe, PayPal, Venmo, Zelle y otros métodos según tus necesidades. Los clientes pueden pagarte directamente desde tu sitio. Esto está incluido en los planes de Negocio Personal y Empresa, y puede agregarse a un Portfolio como mejora.</p>"},
+    {q:"¿La página funcionará bien en el teléfono?",
+     a:"<p>Todas las páginas que construimos son mobile-first — diseñadas primero para teléfonos, luego para desktop. Tu página se verá y funcionará perfectamente en cualquier dispositivo.</p>"},
+    {q:"¿La página puede estar en español e inglés?",
+     a:"<p>Sí. El soporte bilingüe (EN/ES) está disponible en todos los planes. Solo indícanoslo en la consulta y configuramos tu página con un botón para cambiar de idioma.</p>"},
+    {q:"¿Qué pasa si quiero cambios después del lanzamiento?",
+     a:"<p>¡Es completamente normal! Para clientes Portfolio, cada cambio tiene un costo de $30. Para clientes de Negocio/Empresa con plan de mantenimiento, los cambios están cubiertos. Si necesitas un rediseño mayor o una sección nueva, te damos una cotización aparte — pero los cambios pequeños siempre son rápidos y económicos.</p>"},
+  ]
+};
+
+// BUILD FAQ
+let currentLang='en';
+function buildFAQ(l){
+  const list=document.getElementById('faq-list');
+  list.innerHTML=FAQS[l].map((f,i)=>`
+    <div class="faq-item" id="faq-${i}">
+      <div class="faq-q" onclick="toggleFAQ(${i})">
+        <span class="faq-qtext">${f.q}</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">${f.a}</div></div>
+    </div>`).join('');
+}
+function toggleFAQ(i){
+  const item=document.getElementById('faq-'+i);
+  item.classList.toggle('open');
+}
+buildFAQ('en');
+
+// LANGUAGE
+const T={
+  en:{
+    'back':'Back to Home','hero-eye':'Start Your Project',
+    'hero-p':"Tell us what you need. We'll take care of the rest — with care, creativity, and a personal touch that makes your site uniquely yours.",
+    'cb-title':'Every project starts with a free consultation',
+    'cb-desc':'Before any code is written, we sit down with you — by WhatsApp, SMS, or a call — to understand your goals, define your style, choose colors, plan content, and build a shared vision. No surprises. Just a site that feels like <em>you</em>.',
+    'cs1':'Discovery Call','cs2':'Design Proposal','cs3':'You Review & Approve','cs4':'We Build & Launch',
+    'tiers-label':'Choose Your Package','tiers-title':'What best describes <em>your need?</em>',
+    't1-name':'Personal Portfolio','t1-note':'Starting price · final quote after consultation',
+    't1-desc':'Perfect for artists, photographers, students, and freelancers who want to showcase their work and personal brand online.',
+    't1-maint':'<strong>Updates & changes: $30</strong> — Need to update a photo, text, or add a section? Each maintenance visit or modification is a flat $30.',
+    't1-f1':'Up to 5 custom pages','t1-f2':'Personal bio & about section','t1-f3':'Portfolio / gallery showcase','t1-f4':'Contact form + social links','t1-f5':'Mobile-first responsive design','t1-f6':'Basic SEO setup','t1-f7':'Payment integration','t1-f8':'Booking system',
+    't-sel':'Select This Plan',
+    't2-name':'Personal Business','t2-note':'Starting price · vs. $500+ others charge in the US',
+    't2-desc':'For entrepreneurs, service providers, and marketplace owners ready to grow online and start converting visitors into clients.',
+    't2-maint':'<strong>Monthly maintenance: $20/mo</strong> — Includes updates, security checks, and minor content changes. Discounts may be applied based on your plan.',
+    't2-f1':'Up to 10 custom pages','t2-f2':'Custom design & branding','t2-f3':'Service / product listings','t2-f4':'Payment processing integration','t2-f5':'WhatsApp button & social links','t2-f6':'Booking / contact system','t2-f7':'Advanced SEO setup','t2-f8':'Mobile-first responsive design',
+    't-sel2':'Select This Plan',
+    't3-name':'Company / Organization','t3-note':'Starting price · custom quote based on scope',
+    't3-desc':'For established companies, clinics, and organizations that need a full-featured professional digital presence with advanced functionality.',
+    't3-maint':'<strong>Monthly maintenance: $20/mo</strong> — Full site upkeep, priority support, and content updates. Discounts may be applied.',
+    't3-f1':'Unlimited pages & sections','t3-f2':'Full custom backend / CMS','t3-f3':'eCommerce or marketplace','t3-f4':'Team / staff profiles','t3-f5':'CRM & automation integration','t3-f6':'Multi-language support','t3-f7':'Advanced analytics & reporting','t3-f8':'Priority support & maintenance',
+    't-sel3':'Select This Plan',
+    'compare-note':'💡 <strong>Why WEBAGENT?</strong> Other agencies in the US charge $500–$2,000+ for the same quality. We believe great websites should be accessible to everyone — without cutting corners on care, design, or support.',
+    'ao-label':'Optional Add-Ons','ao-title':'Customize your <em>package</em>',
+    'ao-sub':"Click to select any extras. Everything gets confirmed on your free consultation call.",
+    'ao1-n':'🎨 Branding & Logo Design','ao1-d':'Professional logo + color palette + brand style guide. Makes your business instantly recognizable across all platforms.',
+    'ao2-n':'🤖 WhatsApp Chatbot','ao2-d':"Automated bot that answers common questions, captures leads, and can book appointments — without you doing anything.",
+    'ao3-n':'📧 Automated Email Response','ao3-d':'Instant welcome emails and follow-up messages sent automatically when someone contacts you or fills out a form.',
+    'ao4-n':'🔒 Monthly Maintenance Plan','ao4-d':'Regular updates, security checks, and content changes so your site stays fresh, fast, and secure. Discounts may be applied.',
+    'ref-title':'Referral Program — Rewards',
+    'ref-p':'Refer a friend to WEBAGENT and both of you benefit. Here\'s exactly what you get:',
+    'ref-r1':'<strong>Portfolio page referral:</strong>&nbsp;You get 1 free maintenance visit ($30 value) when your referred friend signs a contract.',
+    'ref-r2':'<strong>Personal Business / Marketplace referral:</strong>&nbsp;You get 2 months of free monthly maintenance ($40 value) once your friend\'s project is live.',
+    'ref-r3':'Discounts stack. Refer more friends, earn more free months. No expiration on your reward.',
+    'faq-label':'FAQ','faq-title':'Questions & <em>Answers</em>',
+    'form-label':'Get in Touch','form-title':'Ready? <em>Let\'s talk.</em>',
+    'form-sub':"Choose how you'd like to reach us — or fill out the form below and we'll send it all to WhatsApp for you.",
+    'cm1-t':'WhatsApp','cm1-p':'Fastest response. Chat with us directly — messages, voice notes, photos, whatever works for you.','cm1-btn':'Message on WhatsApp →',
+    'cm2-t':'SMS / Text Message','cm2-p':'Prefer a regular text? Send us an SMS anytime and we\'ll get back to you promptly.','cm2-btn':'Send a Text →',
+    'form-or':'or fill out the form below',
+    'sum-title':'Your Selection Summary','sum-empty':'No plan selected yet — choose a package above.',
+    'fl-name':'Full Name','fl-wa':'WhatsApp / Phone','fl-email':'Email','fl-biz':'Business / Project Name','fl-industry':'Industry / Type',
+    'ind-0':'Select your industry...','ind-1':'Marketplace / eCommerce','ind-2':'Medical / Health','ind-3':'Consulting / Advisory','ind-4':'Cleaning / Home Services','ind-5':'Restaurant / Food','ind-6':'Art / Photography / Portfolio','ind-7':'Other',
+    'fl-msg':'Tell us about your project',
+    'fl-ref':'I was referred by someone (write their name in the message above)',
+    'btn-send':'Send via WhatsApp','btn-note':"Opens WhatsApp with all your details pre-filled. We reply within a few hours.",
+    'notice-plan':'<strong>Before submitting</strong> — scroll up and select a package and any add-ons you\'re interested in. It helps us give you the most accurate quote!',
+    'modal-title':'How would you like to reach us?','modal-sub':'Choose your preferred method',
+    'modal-wa':'WhatsApp','modal-sms':'SMS / Text Message','modal-call':'Call Us'
+  },
+  es:{
+    'back':'Volver al Inicio','hero-eye':'Inicia tu Proyecto',
+    'hero-p':'Cuéntanos qué necesitas. Nosotros nos encargamos del resto — con cuidado, creatividad y atención personalizada que hace tu sitio único.',
+    'cb-title':'Cada proyecto empieza con una consulta gratuita',
+    'cb-desc':'Antes de escribir código, nos sentamos contigo — por WhatsApp, SMS o llamada — para entender tus metas, definir el estilo, elegir colores, planear contenido y alinear una visión. Sin sorpresas. Solo una página que se sienta como <em>tú</em>.',
+    'cs1':'Llamada de Consulta','cs2':'Propuesta de Diseño','cs3':'Revisas y Apruebas','cs4':'Construimos y Lanzamos',
+    'tiers-label':'Elige tu Paquete','tiers-title':'¿Qué describe mejor <em>tu necesidad?</em>',
+    't1-name':'Portfolio Personal','t1-note':'Precio inicial · cotización final tras consulta',
+    't1-desc':'Perfecto para artistas, fotógrafos, estudiantes y freelancers que quieren mostrar su trabajo y marca personal.',
+    't1-maint':'<strong>Cambios y actualizaciones: $30</strong> — ¿Necesitas actualizar una foto, texto o agregar una sección? Cada visita de mantenimiento o modificación tiene un costo fijo de $30.',
+    't1-f1':'Hasta 5 páginas personalizadas','t1-f2':'Bio personal y sección sobre mí','t1-f3':'Portfolio / galería de trabajos','t1-f4':'Formulario de contacto + redes sociales','t1-f5':'Diseño responsive mobile-first','t1-f6':'SEO básico','t1-f7':'Integración de pagos','t1-f8':'Sistema de citas',
+    't-sel':'Elegir este Plan',
+    't2-name':'Negocio Personal','t2-note':'Precio inicial · vs. $500+ que cobra otra gente en EE.UU.',
+    't2-desc':'Para emprendedores, proveedores de servicios y dueños de marketplaces listos para crecer en línea y convertir visitantes en clientes.',
+    't2-maint':'<strong>Mantenimiento mensual: $20/mes</strong> — Incluye actualizaciones, revisiones de seguridad y cambios de contenido menores. Se pueden aplicar descuentos.',
+    't2-f1':'Hasta 10 páginas personalizadas','t2-f2':'Diseño y branding personalizado','t2-f3':'Listado de servicios / productos','t2-f4':'Integración de pagos','t2-f5':'Botón de WhatsApp y redes sociales','t2-f6':'Sistema de reservas / contacto','t2-f7':'SEO avanzado','t2-f8':'Diseño responsive mobile-first',
+    't-sel2':'Elegir este Plan',
+    't3-name':'Empresa / Organización','t3-note':'Precio inicial · cotización personalizada según alcance',
+    't3-desc':'Para empresas establecidas, clínicas u organizaciones que necesitan una presencia digital completa y profesional.',
+    't3-maint':'<strong>Mantenimiento mensual: $20/mes</strong> — Mantenimiento completo, soporte prioritario y actualizaciones de contenido. Se pueden aplicar descuentos.',
+    't3-f1':'Páginas ilimitadas','t3-f2':'Backend / CMS personalizado completo','t3-f3':'eCommerce o marketplace','t3-f4':'Perfiles de equipo / personal','t3-f5':'Integración CRM y automatización','t3-f6':'Soporte multilingüe','t3-f7':'Analítica avanzada e informes','t3-f8':'Soporte y mantenimiento prioritario',
+    't-sel3':'Elegir este Plan',
+    'compare-note':'💡 <strong>¿Por qué WEBAGENT?</strong> Otras agencias en EE.UU. cobran $500–$2,000+ por la misma calidad. Creemos que las buenas páginas deben ser accesibles para todos — sin sacrificar el cuidado, diseño ni soporte.',
+    'ao-label':'Extras Opcionales','ao-title':'Personaliza tu <em>paquete</em>',
+    'ao-sub':'Haz clic para seleccionar extras. Confirmamos todo en tu llamada de consulta gratuita.',
+    'ao1-n':'🎨 Branding y Diseño de Logo','ao1-d':'Logo profesional + paleta de colores + guía de estilo. Hace que tu negocio sea reconocible en todas las plataformas.',
+    'ao2-n':'🤖 Chatbot de WhatsApp','ao2-d':'Bot automatizado que responde preguntas comunes, captura leads y puede gestionar citas — sin que hagas nada.',
+    'ao3-n':'📧 Respuesta Automática por Email','ao3-d':'Emails de bienvenida y seguimientos enviados automáticamente cuando alguien te contacta o llena un formulario.',
+    'ao4-n':'🔒 Plan de Mantenimiento Mensual','ao4-d':'Actualizaciones regulares, revisiones de seguridad y cambios de contenido para que tu sitio siempre esté fresco y seguro. Se pueden aplicar descuentos.',
+    'ref-title':'Programa de Referidos — Recompensas',
+    'ref-p':'Refiere a un amigo a WEBAGENT y ambos se benefician. Aquí exactamente lo que recibes:',
+    'ref-r1':'<strong>Referido para página Portfolio:</strong>&nbsp;Recibes 1 visita de mantenimiento gratis (valor $30) cuando tu amigo referido firma contrato.',
+    'ref-r2':'<strong>Referido para Negocio Personal / Marketplace:</strong>&nbsp;Recibes 2 meses de mantenimiento mensual gratis (valor $40) cuando el proyecto de tu amigo se lanza.',
+    'ref-r3':'Las recompensas se acumulan. Refiere más amigos, gana más meses gratis. Sin fecha de vencimiento.',
+    'faq-label':'Preguntas Frecuentes','faq-title':'Preguntas y <em>Respuestas</em>',
+    'form-label':'Contáctanos','form-title':'¿Listo? <em>Hablemos.</em>',
+    'form-sub':'Elige cómo prefieres contactarnos — o llena el formulario y te lo enviamos a WhatsApp con todo precargado.',
+    'cm1-t':'WhatsApp','cm1-p':'Respuesta más rápida. Escríbenos directo — mensajes, notas de voz, fotos, lo que prefieras.','cm1-btn':'Escribir por WhatsApp →',
+    'cm2-t':'SMS / Mensaje de Texto','cm2-p':'¿Prefieres un mensaje de texto regular? Escríbenos un SMS y te respondemos rápido.','cm2-btn':'Enviar un SMS →',
+    'form-or':'o llena el formulario',
+    'sum-title':'Resumen de tu Selección','sum-empty':'Ningún plan seleccionado — elige un paquete arriba.',
+    'fl-name':'Nombre Completo','fl-wa':'WhatsApp / Teléfono','fl-email':'Correo Electrónico','fl-biz':'Nombre del Negocio / Proyecto','fl-industry':'Industria / Tipo',
+    'ind-0':'Selecciona tu industria...','ind-1':'Marketplace / eCommerce','ind-2':'Médico / Salud','ind-3':'Consultoría / Asesoría','ind-4':'Limpieza / Servicios del Hogar','ind-5':'Restaurante / Comida','ind-6':'Arte / Fotografía / Portfolio','ind-7':'Otro',
+    'fl-msg':'Cuéntanos sobre tu proyecto',
+    'fl-ref':'Fui referido por alguien (escribe su nombre en el mensaje)',
+    'btn-send':'Enviar por WhatsApp','btn-note':'Abre WhatsApp con todos tus datos precargados. Respondemos en pocas horas.',
+    'notice-plan':'<strong>Antes de enviar</strong> — desplázate hacia arriba y selecciona un paquete y los extras que te interesen. ¡Nos ayuda a darte la cotización más precisa!',
+    'modal-title':'¿Cómo prefieres contactarnos?','modal-sub':'Elige tu método preferido',
+    'modal-wa':'WhatsApp','modal-sms':'SMS / Mensaje de Texto','modal-call':'Llamarnos'
+  }
+};
+function setLang(l){
+  currentLang=l;const t=T[l];
+  document.querySelectorAll('[data-key]').forEach(el=>{const k=el.getAttribute('data-key');if(t[k]!==undefined)el.innerHTML=t[k];});
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${l}')"]`).classList.add('active');
+  document.documentElement.lang=l;
+  buildFAQ(l);
+  if(selectedTier)updateSummary();
+}
+</script>
+<script src="router.js"></script>
+</body>
+</html>
